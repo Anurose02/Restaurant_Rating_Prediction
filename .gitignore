@@ -1,5 +1,4 @@
-zomato1.csv
 *.joblib
 *.csv
-
+*.pickle
 *.h5
