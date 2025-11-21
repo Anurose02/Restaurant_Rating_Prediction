@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Rating Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #fdfbf7 0%, #f5ebe0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(214, 158, 89, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: float 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(139, 69, 19, 0.08);
+            max-width: 580px;
+            width: 100%;
+            padding: 48px;
+            position: relative;
+            border: 1px solid rgba(214, 158, 89, 0.1);
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container::before {
+            content: '🍽️';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 40px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.1);
+        }
+
+        h1 {
+            color: #8b4513;
+            margin-bottom: 8px;
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #a0826d;
+            margin-bottom: 36px;
+            font-size: 15px;
+            text-align: center;
+            font-weight: 400;
+        }
+
+        .form-group {
+            margin-bottom: 28px;
+            animation: fadeIn 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .form-group:nth-child(2) { animation-delay: 0.15s; }
+        .form-group:nth-child(3) { animation-delay: 0.2s; }
+        .form-group:nth-child(4) { animation-delay: 0.25s; }
+        .form-group:nth-child(5) { animation-delay: 0.3s; }
+        .form-group:nth-child(6) { animation-delay: 0.35s; }
+        .form-group:nth-child(7) { animation-delay: 0.4s; }
+        .form-group:nth-child(8) { animation-delay: 0.45s; }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #6b4423;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e8d5c4;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #ffffff;
+            color: #3e2723;
+            font-family: inherit;
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #d4a574;
+            box-shadow: 0 0 0 4px rgba(214, 158, 89, 0.1), 0 4px 12px rgba(139, 69, 19, 0.08);
+            transform: translateY(-2px);
+        }
+
+        input[type="number"]:hover,
+        select:hover {
+            border-color: #d4a574;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 56px;
+            height: 30px;
+            background: linear-gradient(135deg, #e8d5c4 0%, #d9c3b0 100%);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-switch.active {
+            background: linear-gradient(135deg, #d4a574 0%, #b8905f 100%);
+            box-shadow: 0 2px 8px rgba(139, 69, 19, 0.3);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(26px);
+            box-shadow: 0 2px 8px rgba(139, 69, 19, 0.3);
+        }
+
+        .toggle-label {
+            font-size: 14px;
+            color: #8b7355;
+            user-select: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .toggle-switch:hover {
+            transform: scale(1.05);
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%238b4513' d='M7 10L2 5h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            cursor: pointer;
+            padding-right: 45px;
+        }
+
+        select option {
+            background: white;
+            color: #3e2723;
+            padding: 10px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #8b4513 0%, #6b3410 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .submit-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(139, 69, 19, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .submit-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .result {
+            margin-top: 28px;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(139, 69, 19, 0.05) 0%, rgba(214, 158, 89, 0.05) 100%);
+            border: 2px solid #d4a574;
+            border-radius: 16px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            color: #8b4513;
+            display: none;
+            animation: resultPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        /* Error state for result */
+        .result.error {
+             border-color: #dc3545;
+             background: rgba(220, 53, 69, 0.05);
+             color: #dc3545;
+        }
+        
+        .result.error::before {
+            content: '⚠️'; /* Error symbol */
+            animation: none; /* Stop star rotation */
+        }
+
+
+        @keyframes resultPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result::before {
+            content: '⭐';
+            display: block;
+            font-size: 32px;
+            margin-bottom: 8px;
+            animation: rotate 2s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        input[type="number"]:invalid {
+            border-color: #dc3545;
+        }
+
+        input::placeholder {
+            color: #c4a88a;
+            opacity: 0.7;
+        }
+
+        .loading {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .loading .submit-btn::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin-left: -8px;
+            margin-top: -8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 32px 24px;
+            }
+            
+            h1 {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Restaurant Rating Predictor</h1>
+        <p class="subtitle">Discover your restaurant's potential rating</p>
+
+        <!-- The 'action' and 'method' are not needed when using fetch() -->
+        <form id="predictionForm">
+            <!-- Online Order Toggle -->
+            <div class="form-group">
+                <label>Online Order Available</label>
+                <div class="toggle-container">
+                    <div class="toggle-switch" id="onlineOrderToggle" onclick="toggleSwitch('onlineOrder')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                    <span class="toggle-label" id="onlineOrderLabel">Off</span>
+                    <!-- name="online_order" matches app.py -->
+                    <input type="hidden" name="online_order" id="onlineOrderInput" value="0">
+                </div>
+            </div>
+
+            <!-- Book Table Toggle -->
+            <div class="form-group">
+                <label>Table Booking Available</label>
+                <div class="toggle-container">
+                    <div class="toggle-switch" id="bookTableToggle" onclick="toggleSwitch('bookTable')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                    <span class="toggle-label" id="bookTableLabel">Off</span>
+                    <!-- name="book_table" matches app.py -->
+                    <input type="hidden" name="book_table" id="bookTableInput" value="0">
+                </div>
+            </div>
+
+            <!-- Cost for Two -->
+            <div class="form-group">
+                <label for="costForTwo">Cost for Two (₹)</label>
+                <!-- 
+                  KEY CHANGE: name="approx_cost" 
+                  This MUST match what app.py expects: request.form.get('approx_cost')
+                -->
+                <input type="number" id="costForTwo" name="approx_cost" min="100" step="1" placeholder="Enter amount" required>
+            </div>
+
+            <!-- Location -->
+            <div class="form-group">
+                <label for="location">Location</label>
+                <!-- 
+                  KEY CHANGE: This list is now built by Jinja using the 'locations'
+                  variable passed from your app.py
+                -->
+                <select id="location" name="location" required>
+                    <option value="">Select location...</option>
+                    {% for loc in locations %}
+                    <option value="{{ loc }}">{{ loc }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- 
+              KEY CHANGE: ADDED MISSING DROPDOWN
+              This field was required by your model but was missing from the HTML
+            -->
+            <div class="form-group">
+                <label for="restType">Restaurant Type</label>
+                <!-- This list is built from the 'rest_types' variable -->
+                <select id="restType" name="rest_type" required>
+                    <option value="">Select type...</option>
+                    {% for type in rest_types %}
+                    <option value="{{ type }}">{{ type }}</Coption>
+                    {% endfor %}
+                </select>
+            </div>
+
+
+            <!-- Cuisine -->
+            <div class="form-group">
+                <label for="cuisine">Cuisine Type</label>
+                <!-- 
+                  KEY CHANGE: name="primary_cuisine" 
+                  This MUST match what app.py expects: request.form.get('primary_cuisine')
+                  The list is now built from 'primary_cuisines'
+                -->
+                <select id="cuisine" name="primary_cuisine" required>
+                    <option value="">Select cuisine...</option>
+                    {% for c in primary_cuisines %}
+                    <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Listed In Type -->
+            <div class="form-group">
+                <label for="listedInType">Listed In (Type)</label>
+                <!-- 
+                  KEY CHANGE: This list is now built by Jinja using the 'listed_in_types'
+                  variable passed from your app.py
+                -->
+                <select id="listedInType" name="listed_in_type" required>
+                    <option value="">Select type...</option>
+                    {% for type in listed_in_types %}
+                    <option value="{{ type }}">{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Listed In City -->
+            <div class="form-group">
+                <label for="listedInCity">Listed In (City Area)</label>
+                <!-- 
+                  KEY CHANGE: This list is now built by Jinja using the 'listed_in_cities'
+                  variable passed from your app.py
+                -->
+                <select id="listedInCity" name="listed_in_city" required>
+                    <option value="">Select area...</option>
+                    {% for city in listed_in_cities %}
+                    <option value="{{ city }}">{{ city }}</Uoption>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="submit-btn"><span>Predict Rating</span></button>
+        </form>
+
+        <div class="result" id="result">
+            <span id="predictionText"></span>
+        </div>
+    </div>
+
+    <!-- 
+      KEY CHANGE: UPDATED SCRIPT
+      This now sends the data to your /predict route and
+      correctly reads the 'rating' or 'error' from the JSON response.
+    -->
+    <script>
+        function toggleSwitch(type) {
+            const toggle = document.getElementById(type + 'Toggle');
+            const label = document.getElementById(type + 'Label');
+            const input = document.getElementById(type + 'Input');
+            
+            toggle.classList.toggle('active');
+            
+            if (toggle.classList.contains('active')) {
+                label.textContent = 'On';
+                label.style.color = '#8b4513';
+                input.value = '1';
+            } else {
+                label.textContent = 'Off';
+                label.style.color = '#8b7355';
+                input.value = '0';
+            }
+        }
+
+        // --- NEW Form submission handling ---
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Stop the form from submitting normally
+            
+            const form = this;
+            const container = document.querySelector('.container');
+            const result = document.getElementById('result');
+            const predictionText = document.getElementById('predictionText');
+            
+            // --- VALIDATION FIX ---
+            // Check if the form passes HTML5 validation (e.g., 'required', 'min')
+            if (!form.checkValidity()) {
+                // Find the first invalid field and focus it for the user
+                const firstInvalid = form.querySelector(':invalid');
+                if (firstInvalid) {
+                    firstInvalid.focus();
+                }
+                // Show an error message
+                predictionText.textContent = 'Error: Please fill out all fields correctly.';
+                result.classList.remove('show'); // Hide previous result
+                result.classList.add('error', 'show');
+                return; // Stop the function
+            }
+            // --- END FIX ---
+            
+            // Add loading state
+            container.classList.add('loading');
+            result.classList.remove('show', 'error'); // Hide old results and error state
+
+            // Collect form data
+            const formData = new FormData(form);
+
+            // Send data to the Python/Flask server
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json()) // Get the JSON response from the server
+            .then(data => {
+                if (data.success) {
+                    // We got a good prediction
+                    const rating = parseFloat(data.rating).toFixed(1);
+                    predictionText.textContent = `Predicted Rating: ${rating} / 5.0`;
+                    result.classList.remove('error');
+                } else {
+                    // The server sent back an error
+                    console.error('Server error:', data.error);
+                    predictionText.textContent = `Error: ${data.error}`;
+                    result.classList.add('error');
+                }
+                
+                // Show the result
+                result.classList.add('show');
+            })
+            .catch(error => {
+                // This catches network errors (e.g., server is down)
+                console.error('Fetch error:', error);
+                predictionText.textContent = 'Error: Server request failed. Is it running?';
+                result.classList.add('error', 'show');
+            })
+            .finally(() => {
+                // Always remove loading state
+                container.classList.remove('loading');
+                
+                // Scroll to result
+                result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+        });
+
+        // Add input animation on focus (your code, unchanged)
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.01)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
